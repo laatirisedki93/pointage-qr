@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pointage QR</title>
+</head>
+<body>
+  <h2>Pointage automatique</h2>
+  <p>Merci, votre pointage est en cours...</p>
+  <script>
+    async function getIP() {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      return data.ip;
+    }
+
+    function getLocation() {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          position => resolve({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          }),
+          error => resolve({ lat: null, lon: null }),
+          { enableHighAccuracy: true, timeout: 5000 }
+        );
+      });
+    }
+
+    async function sendData() {
+      const ip = await getIP();
+      const location = await getLocation();
+      const timestamp = new Date().toISOString();
+
+      await fetch("https://script.google.com/macros/s/AKfycbxf8zXpFsbVIwmLoVLyRf0NHMqK8tZTgpzrsBbbI37RdfrfvPRbC2b3GwQl1GsVB4UTUg/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip, timestamp, ...location })
+      });
+    }
+
+    sendData();
+  </script>
+</body>
+</html>
